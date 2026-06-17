@@ -5,6 +5,9 @@ import { SiteContainer } from "@/components/site-container";
 import { LobsterTaskShowcase } from "@/components/lobster-task-showcase";
 import { HeroLobsterHands } from "@/components/hero-lobster-hands";
 
+const YOUTUBE_VIDEO_URL = "https://youtu.be/RR-KAuNGVfI";
+const YOUTUBE_THUMBNAIL_URL = "https://img.youtube.com/vi/RR-KAuNGVfI/maxresdefault.jpg";
+
 const HOW_IT_WORKS = [
   {
     title: "Upload images",
@@ -41,16 +44,36 @@ const FAQS = [
 
 function VideoEmbed() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_18px_50px_rgba(0,0,0,0.12)] ring-1 ring-black/5 dark:shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
-      <div className="flex aspect-video items-center justify-center bg-muted">
-        <div className="px-6 text-center">
-          <p className="text-sm font-semibold text-foreground">Demo video coming soon</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Screen recording placeholder
-          </p>
+    <a
+      href={YOUTUBE_VIDEO_URL}
+      target="_blank"
+      rel="noreferrer"
+      aria-label="Watch the Imdbo demo video on YouTube"
+      className="group block overflow-hidden rounded-2xl border border-border bg-black shadow-[0_18px_50px_rgba(0,0,0,0.18)] ring-1 ring-black/5 transition-transform hover:-translate-y-0.5 dark:shadow-[0_18px_50px_rgba(0,0,0,0.45)]"
+    >
+      <div className="relative aspect-video">
+        <img
+          src={YOUTUBE_THUMBNAIL_URL}
+          alt="Imdbo demo video preview"
+          className="absolute inset-0 h-full w-full object-cover opacity-90 transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-black/25" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="relative inline-flex h-24 w-24 items-center justify-center">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0DDE53]/45" />
+            <span className="absolute inline-flex h-20 w-20 animate-pulse rounded-full border border-white/70 bg-white/20 backdrop-blur-sm" />
+            <span className="relative inline-flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#0042AB] shadow-[0_14px_40px_rgba(0,0,0,0.32)] transition-transform group-hover:scale-110">
+              <svg className="ml-1 h-7 w-7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5v14l11-7L8 5Z" />
+              </svg>
+            </span>
+          </span>
+        </div>
+        <div className="absolute bottom-4 left-4 rounded-full bg-black/65 px-3 py-1 text-sm font-semibold text-white backdrop-blur-sm">
+          Watch the demo
         </div>
       </div>
-    </div>
+    </a>
   );
 }
 
