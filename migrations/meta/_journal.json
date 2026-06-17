@@ -12,22 +12,15 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1781665118282,
-      "tag": "0001_magenta_scarlet_spider",
+      "when": 1781661622128,
+      "tag": "0001_melted_manta",
       "breakpoints": true
     },
     {
       "idx": 2,
       "version": "7",
-      "when": 1781666000000,
-      "tag": "0002_thirteen_field_spec",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
       "when": 1781667000000,
-      "tag": "0003_image_hash_dedup",
+      "tag": "0002_submission_metadata",
       "breakpoints": true
     }
   ]

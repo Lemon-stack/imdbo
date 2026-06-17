@@ -5,6 +5,12 @@ import { useExtractImages } from "@/hooks/use-extract-images";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/toast-provider";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface UploadFormContentProps {
   closeDialog?: () => void;
@@ -39,6 +45,7 @@ function UploadSlot({
   onDragOver,
   onDragLeave,
   onDrop,
+  onPreviewClick,
 }: {
   id: string;
   label: string;
@@ -52,6 +59,7 @@ function UploadSlot({
   onDragOver: (e: React.DragEvent) => void;
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent) => void;
+  onPreviewClick: () => void;
 }) {
   return (
     <div className="relative">
@@ -74,7 +82,15 @@ function UploadSlot({
         }`}
       >
         {preview ? (
-          <img src={preview} alt={`${label} preview`} className="w-full h-full object-cover rounded-lg" />
+          <img
+            src={preview}
+            alt={`${label} preview`}
+            className="w-full h-full object-cover rounded-lg"
+            onClick={(e) => {
+              e.preventDefault();
+              onPreviewClick();
+            }}
+          />
         ) : (
           <div className="flex flex-col items-center justify-center pt-5 pb-6 px-4 text-center">
             <svg className="w-8 h-8 text-muted-foreground mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,6 +129,9 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
   const [backDragging, setBackDragging] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewSide, setPreviewSide] = useState<"front" | "back">("front");
   const mutation = useExtractImages();
   const router = useRouter();
   const { toast } = useToast();
@@ -245,69 +264,98 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <UploadSlot
-          id="front-input"
-          label="Front"
-          hint="(required)"
-          preview={frontPreview}
-          inputRef={frontInputRef}
-          onFileChange={(e) => handleFileChange(e, setFrontPreview)}
-          onClear={() => {
-            setFrontPreview(null);
-            if (frontInputRef.current) frontInputRef.current.value = "";
-          }}
-          isDragging={frontDragging}
-          onDragEnter={() => setFrontDragging(true)}
-          onDragOver={(e) => e.preventDefault()}
-          onDragLeave={() => setFrontDragging(false)}
-          onDrop={(e) => {
-            setFrontDragging(false);
-            handleDrop(e, frontInputRef, setFrontPreview);
-          }}
-        />
-        <UploadSlot
-          id="back-input"
-          label="Back"
-          hint="(optional)"
-          preview={backPreview}
-          inputRef={backInputRef}
-          onFileChange={(e) => handleFileChange(e, setBackPreview)}
-          onClear={() => {
-            setBackPreview(null);
-            if (backInputRef.current) backInputRef.current.value = "";
-          }}
-          isDragging={backDragging}
-          onDragEnter={() => setBackDragging(true)}
-          onDragOver={(e) => e.preventDefault()}
-          onDragLeave={() => setBackDragging(false)}
-          onDrop={(e) => {
-            setBackDragging(false);
-            handleDrop(e, backInputRef, setBackPreview);
-          }}
-        />
-      </div>
-
-      {inlineError && (
-        <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
-          {inlineError}
+    <>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <UploadSlot
+            id="front-input"
+            label="Front"
+            hint="(required)"
+            preview={frontPreview}
+            inputRef={frontInputRef}
+            onFileChange={(e) => handleFileChange(e, setFrontPreview)}
+            onClear={() => {
+              setFrontPreview(null);
+              if (frontInputRef.current) frontInputRef.current.value = "";
+            }}
+            isDragging={frontDragging}
+            onDragEnter={() => setFrontDragging(true)}
+            onDragOver={(e) => e.preventDefault()}
+            onDragLeave={() => setFrontDragging(false)}
+            onDrop={(e) => {
+              setFrontDragging(false);
+              handleDrop(e, frontInputRef, setFrontPreview);
+            }}
+            onPreviewClick={() => {
+              setPreviewImage(frontPreview);
+              setPreviewSide("front");
+              setPreviewOpen(true);
+            }}
+          />
+          <UploadSlot
+            id="back-input"
+            label="Back"
+            hint="(optional)"
+            preview={backPreview}
+            inputRef={backInputRef}
+            onFileChange={(e) => handleFileChange(e, setBackPreview)}
+            onClear={() => {
+              setBackPreview(null);
+              if (backInputRef.current) backInputRef.current.value = "";
+            }}
+            isDragging={backDragging}
+            onDragEnter={() => setBackDragging(true)}
+            onDragOver={(e) => e.preventDefault()}
+            onDragLeave={() => setBackDragging(false)}
+            onDrop={(e) => {
+              setBackDragging(false);
+              handleDrop(e, backInputRef, setBackPreview);
+            }}
+            onPreviewClick={() => {
+              setPreviewImage(backPreview);
+              setPreviewSide("back");
+              setPreviewOpen(true);
+            }}
+          />
         </div>
-      )}
 
-      {mutation.isError && !inlineError && (
-        <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
-          {mutation.error?.message || "Extraction failed. Please try again."}
-        </div>
-      )}
+        {inlineError && (
+          <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
+            {inlineError}
+          </div>
+        )}
 
-      <Button type="submit" disabled={!frontPreview || mutation.isPending} className="w-full gap-2">
-        {mutation.isPending && <Spinner className="w-4 h-4" />}
-        {mutation.isPending ? "Extracting data…" : "Extract Data"}
-      </Button>
-      {mutation.isPending && (
-        <p className="text-xs text-center text-muted-foreground">This usually takes 5–15 seconds.</p>
-      )}
-    </form>
+        {mutation.isError && !inlineError && (
+          <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
+            {mutation.error?.message || "Extraction failed. Please try again."}
+          </div>
+        )}
+
+        <Button type="submit" disabled={!frontPreview || mutation.isPending} className="w-full gap-2">
+          {mutation.isPending && <Spinner className="w-4 h-4" />}
+          {mutation.isPending ? "Extracting data…" : "Extract Data"}
+        </Button>
+        {mutation.isPending && (
+          <p className="text-xs text-center text-muted-foreground">This usually takes 5–15 seconds.</p>
+        )}
+      </form>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              Preview - {previewSide === "front" ? "Front" : "Back"}
+            </DialogTitle>
+          </DialogHeader>
+          {previewImage && (
+            <img
+              src={previewImage}
+              alt={`${previewSide} preview`}
+              className="w-full h-auto rounded-lg"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

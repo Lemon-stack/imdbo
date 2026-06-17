@@ -1,6 +1,6 @@
 {
   "id": "9f2a1b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-  "prevId": "189c6d60-dded-4837-bb08-904cdea778a9",
+  "prevId": "3dff0e4b-d0b5-4841-8ca3-b1b926738884",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -110,6 +110,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "front_image_hash": {
+          "name": "front_image_hash",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "back_image_hash": {
+          "name": "back_image_hash",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "confidence": {
           "name": "confidence",
           "type": "jsonb",
@@ -142,7 +154,13 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "submissions_front_hash_idx": {
+          "name": "submissions_front_hash_idx",
+          "columns": ["front_image_hash"],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
