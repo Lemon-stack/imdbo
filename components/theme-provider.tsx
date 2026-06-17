@@ -18,7 +18,8 @@ export function useTheme() {
 }
 
 function getInitialTheme(): Theme {
-  if (typeof document === "undefined") return "light";
+  if (typeof window === "undefined") return "light";
+  if (window.localStorage.getItem("theme") === "dark") return "dark";
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 

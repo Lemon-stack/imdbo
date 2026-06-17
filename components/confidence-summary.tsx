@@ -50,9 +50,9 @@ export function ConfidenceSummary({
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 bg-card border border-border rounded-lg px-4 py-3">
-      <div className="flex items-center gap-6">
+      <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 lg:w-auto lg:gap-6">
         {stats.map((stat) => (
-          <div key={stat.label} className="flex flex-col">
+          <div key={stat.label} className="min-w-0 rounded-lg border border-border/70 bg-background/50 px-3 py-2 sm:border-0 sm:bg-transparent sm:p-0">
             <span className="text-xs text-muted-foreground">{stat.label}</span>
             <div className="flex items-baseline gap-2">
               <span className="text-lg font-semibold text-foreground">
@@ -67,7 +67,7 @@ export function ConfidenceSummary({
       </div>
 
       {lowConfidenceCount > 0 && (
-        <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer select-none">
+        <label className="flex w-full cursor-pointer select-none items-center gap-2 text-sm text-foreground lg:w-auto">
           <input
             type="checkbox"
             checked={lowConfidenceOnly}

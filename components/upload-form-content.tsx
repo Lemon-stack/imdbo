@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useExtractImages } from "@/hooks/use-extract-images";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/toast-provider";
 
 interface UploadFormContentProps {
   closeDialog?: () => void;
@@ -68,7 +69,7 @@ function UploadSlot({
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
-        className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer transition ${
+        className={`flex h-40 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition sm:h-48 ${
           isDragging ? "border-primary bg-primary/5" : "border-border hover:bg-muted"
         }`}
       >
@@ -114,6 +115,7 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
   const [success, setSuccess] = useState(false);
   const mutation = useExtractImages();
   const router = useRouter();
+  const { toast } = useToast();
 
   const validateFile = (file: File): string | null => {
     if (!file.type.startsWith("image/")) return "Please upload an image file.";
@@ -137,9 +139,19 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
     const err = validateFile(file);
     if (err) {
       setInlineError(err);
+      toast({
+        tone: "error",
+        title: "File rejected",
+        description: err,
+      });
       return;
     }
     loadPreview(file, setSide);
+    toast({
+      tone: "info",
+      title: `${file.name} added`,
+      description: "Ready to extract when the front image is selected.",
+    });
   };
 
   const handleDrop = (
@@ -154,6 +166,11 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
     const err = validateFile(file);
     if (err) {
       setInlineError(err);
+      toast({
+        tone: "error",
+        title: "File rejected",
+        description: err,
+      });
       return;
     }
     const dt = new DataTransfer();
@@ -162,6 +179,11 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
       inputRef.current.files = dt.files;
     }
     loadPreview(file, setSide);
+    toast({
+      tone: "info",
+      title: `${file.name} added`,
+      description: "Image attached to the upload form.",
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -170,22 +192,41 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
     const backFile = backInputRef.current?.files?.[0];
 
     if (!frontFile) {
-      setInlineError("Front image is required.");
+      const message = "Front image is required.";
+      setInlineError(message);
+      toast({
+        tone: "error",
+        title: "Missing front image",
+        description: message,
+      });
       return;
     }
 
     setInlineError(null);
     try {
+      toast({
+        tone: "info",
+        title: "Extracting product details",
+        description: backFile ? "Reading front and back images." : "Reading the front image.",
+      });
       await mutation.mutateAsync({ front: frontFile, back: backFile || null });
       setSuccess(true);
+      toast({
+        tone: "success",
+        title: "Extraction complete",
+        description: "The submission was added to the dashboard.",
+      });
       setTimeout(() => {
         closeDialog?.();
-        if (!closeDialog) {
-          router.push("/dashboard");
-        }
+        router.push("/dashboard");
       }, 900);
-    } catch {
-      // error surfaced via mutation.error below
+    } catch (error) {
+      toast({
+        tone: "error",
+        title: "Extraction failed",
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+      });
     }
   };
 
@@ -205,7 +246,7 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <UploadSlot
           id="front-input"
           label="Front"

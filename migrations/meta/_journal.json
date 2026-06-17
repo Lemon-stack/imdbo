@@ -15,6 +15,20 @@
       "when": 1781665118282,
       "tag": "0001_magenta_scarlet_spider",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781666000000,
+      "tag": "0002_thirteen_field_spec",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781667000000,
+      "tag": "0003_image_hash_dedup",
+      "breakpoints": true
     }
   ]
 }

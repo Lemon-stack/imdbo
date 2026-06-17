@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { SubmissionRow } from "@/hooks/use-submissions";
 import { usePagination } from "@/hooks/use-pagination";
 import { exportToCSV } from "@/lib/utils/export-csv";
@@ -31,10 +31,17 @@ interface SubmissionsTableProps {
 type SortKey =
   | "itemName"
   | "barcode"
+  | "manufacturer"
   | "brand"
   | "type"
+  | "variant"
   | "weight"
+  | "packagingType"
   | "country"
+  | "fragranceFlavor"
+  | "promotion"
+  | "addons"
+  | "tagline"
   | "createdAt"
   | "confidence";
 type SortDir = "asc" | "desc";
@@ -117,6 +124,32 @@ function SortIcon({ dir }: { dir: SortDir | null }) {
   );
 }
 
+function SortHead({
+  label,
+  sortKey,
+  current,
+  dir,
+  onClick,
+}: {
+  label: string;
+  sortKey: SortKey;
+  current: SortKey | null;
+  dir: SortDir;
+  onClick: (key: SortKey) => void;
+}) {
+  return (
+    <TableHead>
+      <button
+        type="button"
+        onClick={() => onClick(sortKey)}
+        className="inline-flex items-center hover:text-foreground whitespace-nowrap"
+      >
+        {label} <SortIcon dir={current === sortKey ? dir : null} />
+      </button>
+    </TableHead>
+  );
+}
+
 function ConfidentCell({
   value,
   field,
@@ -158,7 +191,12 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
           row.brand,
           row.manufacturer,
           row.type,
+          row.variant,
           row.country,
+          row.fragranceFlavor,
+          row.promotion,
+          row.addons,
+          row.tagline,
         ]
           .filter(Boolean)
           .join(" ")
@@ -201,9 +239,18 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
   } = usePagination(filteredData);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  const handleExportAll = () => {
+  const handleExportAll = useCallback(() => {
     exportToCSV(data, `submissions-${Date.now()}.csv`);
-  };
+  }, [data]);
+
+  useEffect(() => {
+    const onSidebarExport = () => {
+      handleExportAll();
+    };
+
+    window.addEventListener("dashboard-export-csv", onSidebarExport);
+    return () => window.removeEventListener("dashboard-export-csv", onSidebarExport);
+  }, [handleExportAll]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey !== key) {
@@ -217,9 +264,6 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
     }
   };
 
-  const sortDirFor = (key: SortKey): SortDir | null =>
-    sortKey === key ? sortDir : null;
-
   return (
     <div className="space-y-4">
       <ConfidenceSummary
@@ -228,7 +272,7 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
         onToggleLowConfidence={setLowConfidenceOnly}
       />
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="relative flex-1 max-w-xs">
           <svg
             className="w-4 h-4 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2"
@@ -250,14 +294,14 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search barcode, brand, product…"
             aria-label="Search submissions"
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full pl-8 pr-3 py-2 text-sm bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
         <Button
           variant="outline"
           size="sm"
           onClick={handleExportAll}
-          className="gap-2"
+          className="gap-2 rounded-2xl"
         >
           <svg
             className="w-4 h-4"
@@ -277,92 +321,34 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
         </Button>
       </div>
 
-      <div className="rounded-lg border">
+      <div className="overflow-x-auto rounded-lg border border-border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-8"></TableHead>
-              <TableHead>
-                <button
-                  type="button"
-                  onClick={() => toggleSort("itemName")}
-                  className="inline-flex items-center hover:text-foreground"
-                >
-                  Item Name <SortIcon dir={sortDirFor("itemName")} />
-                </button>
-              </TableHead>
-              <TableHead>
-                <button
-                  type="button"
-                  onClick={() => toggleSort("brand")}
-                  className="inline-flex items-center hover:text-foreground"
-                >
-                  Brand <SortIcon dir={sortDirFor("brand")} />
-                </button>
-              </TableHead>
-              <TableHead>
-                <button
-                  type="button"
-                  onClick={() => toggleSort("barcode")}
-                  className="inline-flex items-center hover:text-foreground"
-                >
-                  Barcode <SortIcon dir={sortDirFor("barcode")} />
-                </button>
-              </TableHead>
-              <TableHead>
-                <button
-                  type="button"
-                  onClick={() => toggleSort("type")}
-                  className="inline-flex items-center hover:text-foreground"
-                >
-                  Type <SortIcon dir={sortDirFor("type")} />
-                </button>
-              </TableHead>
-              <TableHead>
-                <button
-                  type="button"
-                  onClick={() => toggleSort("weight")}
-                  className="inline-flex items-center hover:text-foreground"
-                >
-                  Weight <SortIcon dir={sortDirFor("weight")} />
-                </button>
-              </TableHead>
-              <TableHead>Packaging</TableHead>
-              <TableHead>
-                <button
-                  type="button"
-                  onClick={() => toggleSort("country")}
-                  className="inline-flex items-center hover:text-foreground"
-                >
-                  Country <SortIcon dir={sortDirFor("country")} />
-                </button>
-              </TableHead>
+              <TableHead className="w-8 sticky left-0 bg-card z-10"></TableHead>
+              <SortHead label="Item Name" sortKey="itemName" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Barcode" sortKey="barcode" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Manufacturer" sortKey="manufacturer" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Brand" sortKey="brand" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Type" sortKey="type" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Variant" sortKey="variant" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Weight" sortKey="weight" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Packaging" sortKey="packagingType" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Country" sortKey="country" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Fragrance" sortKey="fragranceFlavor" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Promotion" sortKey="promotion" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Addons" sortKey="addons" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Tagline" sortKey="tagline" current={sortKey} dir={sortDir} onClick={toggleSort} />
               <TableHead>Fields</TableHead>
-              <TableHead>
-                <button
-                  type="button"
-                  onClick={() => toggleSort("confidence")}
-                  className="inline-flex items-center hover:text-foreground"
-                >
-                  Confidence <SortIcon dir={sortDirFor("confidence")} />
-                </button>
-              </TableHead>
-              <TableHead>
-                <button
-                  type="button"
-                  onClick={() => toggleSort("createdAt")}
-                  className="inline-flex items-center hover:text-foreground"
-                >
-                  Created <SortIcon dir={sortDirFor("createdAt")} />
-                </button>
-              </TableHead>
+              <SortHead label="Conf" sortKey="confidence" current={sortKey} dir={sortDir} onClick={toggleSort} />
+              <SortHead label="Created" sortKey="createdAt" current={sortKey} dir={sortDir} onClick={toggleSort} />
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedItems.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={11}
+                  colSpan={18}
                   className="text-center text-muted-foreground py-8"
                 >
                   No submissions match this filter.
@@ -372,9 +358,8 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
               paginatedItems.map((row) => {
                 const isExpanded = expandedId === row.id;
                 return (
-                  <>
+                  <Fragment key={row.id}>
                     <TableRow
-                      key={row.id}
                       className="cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                       onClick={() => setExpandedId(isExpanded ? null : row.id)}
                       tabIndex={0}
@@ -386,7 +371,7 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
                       }}
                       aria-expanded={isExpanded}
                     >
-                      <TableCell className="w-8">
+                      <TableCell className="w-8 sticky left-0 bg-card">
                         <svg
                           className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`}
                           fill="none"
@@ -402,26 +387,44 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
                           />
                         </svg>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">
+                      <TableCell className="max-w-[180px] truncate">
                         <ConfidentCell value={row.itemName} field="itemName" row={row} />
                       </TableCell>
-                      <TableCell>
-                        <ConfidentCell value={row.brand} field="brand" row={row} />
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">
+                      <TableCell className="font-mono text-xs max-w-[120px] truncate">
                         <ConfidentCell value={row.barcode} field="barcode" row={row} />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="max-w-[140px] truncate">
+                        <ConfidentCell value={row.manufacturer} field="manufacturer" row={row} />
+                      </TableCell>
+                      <TableCell className="max-w-[120px] truncate">
+                        <ConfidentCell value={row.brand} field="brand" row={row} />
+                      </TableCell>
+                      <TableCell className="max-w-[100px] truncate">
                         <ConfidentCell value={row.type} field="type" row={row} />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="max-w-[100px] truncate">
+                        <ConfidentCell value={row.variant} field="variant" row={row} />
+                      </TableCell>
+                      <TableCell className="max-w-[80px] truncate">
                         <ConfidentCell value={row.weight} field="weight" row={row} />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="max-w-[100px] truncate">
                         <ConfidentCell value={row.packagingType} field="packagingType" row={row} />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="max-w-[100px] truncate">
                         <ConfidentCell value={row.country} field="country" row={row} />
+                      </TableCell>
+                      <TableCell className="max-w-[100px] truncate">
+                        <ConfidentCell value={row.fragranceFlavor} field="fragranceFlavor" row={row} />
+                      </TableCell>
+                      <TableCell className="max-w-[120px] truncate">
+                        <ConfidentCell value={row.promotion} field="promotion" row={row} />
+                      </TableCell>
+                      <TableCell className="max-w-[100px] truncate">
+                        <ConfidentCell value={row.addons} field="addons" row={row} />
+                      </TableCell>
+                      <TableCell className="max-w-[140px] truncate">
+                        <ConfidentCell value={row.tagline} field="tagline" row={row} />
                       </TableCell>
                       <TableCell>
                         <FieldsChip count={countExtracted(row)} />
@@ -429,18 +432,18 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
                       <TableCell>
                         <ConfidenceBadge score={averageConfidence(row.confidence)} />
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                         {new Date(row.createdAt).toLocaleDateString()}
                       </TableCell>
                     </TableRow>
                     {isExpanded && (
                       <TableRow key={`${row.id}-detail`}>
-                        <TableCell colSpan={11} className="p-0">
+                        <TableCell colSpan={18} className="p-0">
                           <SubmissionDetail row={row} />
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </Fragment>
                 );
               })
             )}

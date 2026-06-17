@@ -1,20 +1,27 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Bricolage_Grotesque } from "next/font/google";
+import { Instrument_Sans, Instrument_Serif, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "./providers";
-import { AppHeader } from "@/components/app-header";
-import { SiteFooter } from "@/components/site-footer";
 import { UploadProvider } from "@/components/upload-provider";
+import { RootProvider } from "fumadocs-ui/provider/next";
+import { AppChrome } from "@/components/app-chrome";
 
-const bricolage = Bricolage_Grotesque({
+const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
+  variable: "--font-serif",
+  weight: "400",
+});
+
+const spaceMono = Space_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -65,27 +72,28 @@ export default function RootLayout({
       className={cn(
         "h-full",
         "antialiased",
-        geistMono.variable,
+        instrumentSans.variable,
+        instrumentSerif.variable,
+        spaceMono.variable,
         "font-sans",
-        bricolage.variable
       )}
       suppressHydrationWarning
     >
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(!t&&d)){document.documentElement.classList.add('dark');}}catch(e){}})();`,
+            __html: `(function(){try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}catch(e){document.documentElement.classList.remove('dark');}})();`,
           }}
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <Providers>
-          <UploadProvider>
-            <AppHeader />
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
-          </UploadProvider>
-        </Providers>
+        <RootProvider>
+          <Providers>
+            <UploadProvider>
+              <AppChrome>{children}</AppChrome>
+            </UploadProvider>
+          </Providers>
+        </RootProvider>
       </body>
     </html>
   );

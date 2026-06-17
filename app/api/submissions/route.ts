@@ -147,3 +147,21 @@ export async function GET() {
     );
   }
 }
+
+export async function DELETE() {
+  try {
+    const userIp = await getClientIp();
+    const deleted = await getDb()
+      .delete(submissions)
+      .where(eq(submissions.userIp, userIp))
+      .returning({ id: submissions.id });
+
+    return NextResponse.json({ ok: true, deleted: deleted.length });
+  } catch (error) {
+    console.error("Clear submissions error:", error);
+    return NextResponse.json(
+      { error: "Failed to clear submissions" },
+      { status: 500 }
+    );
+  }
+}
