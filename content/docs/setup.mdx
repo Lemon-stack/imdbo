@@ -1,0 +1,85 @@
+---
+title: Setup Guide
+description: Configure OpenAI credits, API keys, Postgres, migrations, local development, and Vercel deployment.
+---
+
+This guide walks through getting Imdbo running from a fresh checkout to a hosted Vercel deployment.
+
+## 1. Buy OpenAI credits
+
+1. Create or sign in to an OpenAI account.
+2. Open the billing area.
+3. Add a payment method.
+4. Buy enough credits for image extraction testing and production usage.
+5. Confirm the account has access to the model used by the app.
+
+## 2. Create an OpenAI API key
+
+1. Open the OpenAI API keys page.
+2. Create a new project key.
+3. Copy the key once.
+4. Add it to your local environment file:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key
+```
+
+Never commit API keys to git.
+
+## 3. Create the database
+
+Create a Postgres database using Neon, Vercel Postgres, Supabase, Railway, or another hosted Postgres provider.
+
+After creating the database, copy the connection string and add it locally:
+
+```bash
+DATABASE_URL=postgres://user:password@host/database?sslmode=require
+```
+
+The app uses Drizzle migrations, so the database must be reachable from your local machine and from Vercel.
+
+## 4. Install and run locally
+
+Install dependencies:
+
+```bash
+pnpm install
+```
+
+Run migrations:
+
+```bash
+pnpm db:migrate
+```
+
+Start the development server:
+
+```bash
+pnpm dev
+```
+
+Open the local URL shown by Next.js, then test an upload from the dashboard.
+
+## 5. Deploy on Vercel
+
+1. Push the repository to GitHub.
+2. Import the project into Vercel.
+3. Add the production environment variables:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key
+DATABASE_URL=your_production_database_url
+```
+
+4. Deploy the project.
+5. Open the deployed app and test the upload flow.
+
+## 6. Production checklist
+
+- OpenAI credits are active.
+- `OPENAI_API_KEY` exists in local and Vercel environments.
+- `DATABASE_URL` exists in local and Vercel environments.
+- Migrations have been run against the production database.
+- The dashboard upload modal opens from `/dashboard?upload=1`.
+- Extraction creates a submission row.
+- CSV export downloads from the submissions table.

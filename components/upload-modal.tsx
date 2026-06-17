@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -25,13 +25,11 @@ interface UploadModalProps {
 
 export function UploadModal({ open, onOpenChange }: UploadModalProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
-  const [mounted, setMounted] = useState(false);
+  // Avoid hydration mismatch: render nothing until the client has hydrated.
+  // Using a lazy initializer (not an effect) so we don't trigger set-state-in-effect.
+  const [hydrated] = useState(() => typeof window !== "undefined");
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
+  if (!hydrated) return null;
 
   if (isDesktop) {
     return (

@@ -1,5 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 
+export interface EditHistoryEntry {
+  field: string;
+  from: string | null;
+  to: string | null;
+  at: string;
+  ip: string;
+}
+
 export interface SubmissionRow {
   id: number;
   userIp: string;
@@ -16,8 +24,14 @@ export interface SubmissionRow {
   promotion: string | null;
   addons: string | null;
   tagline: string | null;
+  frontImage: string | null;
+  backImage: string | null;
+  frontImageHash: string | null;
+  backImageHash: string | null;
   confidence: Record<string, number> | null;
-  rawExtraction: Record<string, any> | null;
+  rawExtraction: Record<string, unknown> | null;
+  manuallyEdited: Record<string, boolean> | null;
+  editHistory: EditHistoryEntry[] | null;
   createdAt: string;
 }
 
@@ -31,6 +45,5 @@ export function useSubmissions() {
       }
       return res.json();
     },
-    refetchInterval: 5000,
   });
 }
