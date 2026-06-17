@@ -5,8 +5,6 @@ import { SiteContainer } from "@/components/site-container";
 import { LobsterTaskShowcase } from "@/components/lobster-task-showcase";
 import { HeroLobsterHands } from "@/components/hero-lobster-hands";
 
-const YOUTUBE_EMBED_URL = "https://www.youtube.com/embed/059Rps0VUf0";
-
 const HOW_IT_WORKS = [
   {
     title: "Upload images",
@@ -43,15 +41,14 @@ const FAQS = [
 
 function VideoEmbed() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-[0_18px_50px_rgba(0,0,0,0.18)] ring-1 ring-black/5 dark:shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
-      <div className="relative aspect-video">
-        <iframe
-          className="absolute inset-0 h-full w-full"
-          src={YOUTUBE_EMBED_URL}
-          title="Product extraction demo"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_18px_50px_rgba(0,0,0,0.12)] ring-1 ring-black/5 dark:shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+      <div className="flex aspect-video items-center justify-center bg-muted">
+        <div className="px-6 text-center">
+          <p className="text-sm font-semibold text-foreground">Demo video coming soon</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Screen recording placeholder
+          </p>
+        </div>
       </div>
     </div>
   );
