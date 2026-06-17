@@ -66,7 +66,7 @@ export default function Home() {
           <div className="relative z-10 grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="max-w-xl space-y-6">
               <h1 className="text-5xl font-bold leading-[1.04] tracking-[-0.5px] text-foreground sm:text-6xl">
-                Extract product data from package images.
+                Do more with less action.
               </h1>
               <p className="max-w-md text-lg leading-7 tracking-[-0.5px] text-foreground">
                 Upload one or two product photos, review the extracted fields in a submissions table, then export the finished data as CSV.
