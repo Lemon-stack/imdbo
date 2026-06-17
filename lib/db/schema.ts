@@ -15,6 +15,8 @@ export const submissions = pgTable("submissions", {
   promotionalMessage: text("promotional_message"),
   confidence: jsonb("confidence"),
   rawExtraction: jsonb("raw_extraction"),
+  manuallyEdited: jsonb("manually_edited"),
+  editHistory: jsonb("edit_history"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

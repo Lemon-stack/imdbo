@@ -86,9 +86,9 @@ async function extractSingleImage(
     jsonStr = jsonStr.replace(/^```\n?/, "").replace(/\n?```$/, "");
   }
 
-  const extracted = JSON.parse(jsonStr);
+  const extracted = JSON.parse(jsonStr) as Record<string, unknown>;
 
-  const normalizeField = (val: any): string | null => {
+  const normalizeField = (val: unknown): string | null => {
     if (!val || val === "null" || val === "N/A" || val === "unknown") {
       return null;
     }
@@ -107,7 +107,7 @@ async function extractSingleImage(
     countryOfOrigin: normalizeField(extracted.countryOfOrigin),
     promotionalMessage: normalizeField(extracted.promotionalMessage),
     confidence: extracted.confidence && typeof extracted.confidence === "object"
-      ? extracted.confidence
+      ? (extracted.confidence as Record<string, number>)
       : {},
   };
 }
