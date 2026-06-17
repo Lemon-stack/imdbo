@@ -30,7 +30,7 @@ interface SubmissionsTableProps {
 
 function ConfidenceBadge({ score }: { score: number | null }) {
   if (score === null) {
-    return <span className="text-gray-400 text-xs">—</span>;
+    return <span className="text-muted-foreground text-xs">—</span>;
   }
   const pct = Math.round(score * 100);
   const colors = confidenceColor(score);
@@ -66,7 +66,7 @@ function ConfidentCell({
   row: SubmissionRow;
 }) {
   const hasValue = value != null && String(value).trim() !== "";
-  if (!hasValue) return <span className="text-gray-400">—</span>;
+  if (!hasValue) return <span className="text-muted-foreground/60">—</span>;
   const score = fieldConfidence(row.confidence, field);
   const colors = confidenceColor(score);
   return <span className={colors.text}>{value}</span>;
@@ -134,7 +134,7 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
           <TableBody>
             {paginatedItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="text-center text-gray-500 py-8">
+                <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
                   No submissions match this filter.
                 </TableCell>
               </TableRow>
@@ -150,7 +150,7 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
                     >
                       <TableCell className="w-8">
                         <svg
-                          className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+                          className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -185,7 +185,7 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
                       <TableCell>
                         <ConfidenceBadge score={averageConfidence(row.confidence)} />
                       </TableCell>
-                      <TableCell className="text-xs text-gray-600">
+                      <TableCell className="text-xs text-muted-foreground">
                         {new Date(row.createdAt).toLocaleDateString()}
                       </TableCell>
                     </TableRow>
@@ -206,7 +206,7 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-muted-foreground">
           Page {pageCount === 0 ? 0 : pageIndex + 1} of {pageCount} ({filteredData.length} shown, {data.length} total)
         </div>
         <div className="flex gap-2">

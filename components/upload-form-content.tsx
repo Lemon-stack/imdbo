@@ -69,19 +69,19 @@ function UploadSlot({
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer transition ${
-          isDragging ? "border-black bg-black/5" : "border-gray-300 hover:bg-gray-50"
+          isDragging ? "border-primary bg-primary/5" : "border-border hover:bg-muted"
         }`}
       >
         {preview ? (
           <img src={preview} alt={`${label} preview`} className="w-full h-full object-cover rounded-lg" />
         ) : (
           <div className="flex flex-col items-center justify-center pt-5 pb-6 px-4 text-center">
-            <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8 text-muted-foreground mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
-            <p className="text-xs font-medium text-gray-700">{label}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{hint}</p>
-            <p className="text-[10px] text-gray-400 mt-1">Click or drag a file</p>
+            <p className="text-xs font-medium text-foreground">{label}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{hint}</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-1">Click or drag a file</p>
           </div>
         )}
       </label>
@@ -93,7 +93,7 @@ function UploadSlot({
             e.preventDefault();
             onClear();
           }}
-          className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+          className="absolute top-2 right-2 bg-foreground/70 hover:bg-foreground text-background rounded-full w-6 h-6 flex items-center justify-center text-xs"
           aria-label={`Remove ${label} image`}
         >
           ×
@@ -197,8 +197,8 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className="text-base font-semibold text-black">Data extracted</p>
-        <p className="text-sm text-gray-600">Redirecting to your submissions…</p>
+        <p className="text-base font-semibold text-foreground">Data extracted</p>
+        <p className="text-sm text-muted-foreground">Redirecting to your submissions…</p>
       </div>
     );
   }
@@ -249,13 +249,13 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
       </div>
 
       {inlineError && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
           {inlineError}
         </div>
       )}
 
       {mutation.isError && !inlineError && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
           {mutation.error?.message || "Extraction failed. Please try again."}
         </div>
       )}
@@ -265,7 +265,7 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
         {mutation.isPending ? "Extracting data…" : "Extract Data"}
       </Button>
       {mutation.isPending && (
-        <p className="text-xs text-center text-gray-500">This usually takes 5–15 seconds.</p>
+        <p className="text-xs text-center text-muted-foreground">This usually takes 5–15 seconds.</p>
       )}
     </form>
   );
