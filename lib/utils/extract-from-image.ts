@@ -18,21 +18,34 @@ export interface ExtractedData {
   confidence: Record<string, number>;
 }
 
-const EXTRACTION_PROMPT = `Extract the following information from the product image. Return a JSON object with these exact fields. If a field is not visible or cannot be determined, set it to null. Include a "confidence" object with 0-1 scores for each field.
+const EXTRACTION_PROMPT = `You are a product data extraction specialist. Extract EXACTLY these 10 fields from the product packaging image:
 
-Fields to extract:
-1. barcode - The product barcode/SKU number
-2. categoryType - Product category (e.g., dairy, beverages, snacks)
-3. segmentType - Market segment (e.g., premium, economy, organic)
-4. manufacturer - Company that manufactures the product
-5. brand - Brand name
-6. productName - Full product name/description
-7. weightUnit - Weight and unit (e.g., "500g", "2L")
-8. packagingType - Type of packaging (e.g., bottle, box, can)
-9. countryOfOrigin - Country where product is from
-10. promotionalMessage - Any promotional text or marketing message
+1. barcode - Product barcode/UPC/EAN number (alphanumeric code)
+2. categoryType - Product category (dairy, beverages, snacks, personal care, etc.)
+3. segmentType - Market segment classification (premium, standard, economy, organic, natural, etc.)
+4. manufacturer - Company name that manufactures the product
+5. brand - Brand name of the product
+6. productName - Full product name and flavor/variant
+7. weightUnit - Net weight with unit (e.g., "500g", "2L", "250ml", "12 oz")
+8. packagingType - Type of packaging (bottle, can, box, jar, bag, pouch, etc.)
+9. countryOfOrigin - Country where product is manufactured
+10. promotionalMessage - Any promotional, marketing, or special offer text visible on packaging
 
-Return ONLY valid JSON, no additional text.`;
+IMPORTANT: Return ONLY valid JSON with these EXACT field names. Every field must be present (use null if not found).
+
+{
+  "barcode": "string or null",
+  "categoryType": "string or null",
+  "segmentType": "string or null",
+  "manufacturer": "string or null",
+  "brand": "string or null",
+  "productName": "string or null",
+  "weightUnit": "string or null",
+  "packagingType": "string or null",
+  "countryOfOrigin": "string or null",
+  "promotionalMessage": "string or null",
+  "confidence": {"barcode": 0.0, "categoryType": 0.0, ...}
+}`;
 
 async function extractSingleImage(
   base64Image: string,
@@ -74,18 +87,28 @@ async function extractSingleImage(
   }
 
   const extracted = JSON.parse(jsonStr);
+
+  const normalizeField = (val: any): string | null => {
+    if (!val || val === "null" || val === "N/A" || val === "unknown") {
+      return null;
+    }
+    return String(val).trim() || null;
+  };
+
   return {
-    barcode: extracted.barcode || null,
-    categoryType: extracted.categoryType || null,
-    segmentType: extracted.segmentType || null,
-    manufacturer: extracted.manufacturer || null,
-    brand: extracted.brand || null,
-    productName: extracted.productName || null,
-    weightUnit: extracted.weightUnit || null,
-    packagingType: extracted.packagingType || null,
-    countryOfOrigin: extracted.countryOfOrigin || null,
-    promotionalMessage: extracted.promotionalMessage || null,
-    confidence: extracted.confidence || {},
+    barcode: normalizeField(extracted.barcode),
+    categoryType: normalizeField(extracted.categoryType),
+    segmentType: normalizeField(extracted.segmentType),
+    manufacturer: normalizeField(extracted.manufacturer),
+    brand: normalizeField(extracted.brand),
+    productName: normalizeField(extracted.productName),
+    weightUnit: normalizeField(extracted.weightUnit),
+    packagingType: normalizeField(extracted.packagingType),
+    countryOfOrigin: normalizeField(extracted.countryOfOrigin),
+    promotionalMessage: normalizeField(extracted.promotionalMessage),
+    confidence: extracted.confidence && typeof extracted.confidence === "object"
+      ? extracted.confidence
+      : {},
   };
 }
 
