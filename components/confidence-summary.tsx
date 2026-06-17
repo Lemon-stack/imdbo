@@ -49,33 +49,29 @@ export function ConfidenceSummary({
   ];
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 bg-card border border-border rounded-lg px-4 py-3">
-      <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 lg:w-auto lg:gap-6">
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {stats.map((stat) => (
-          <div key={stat.label} className="min-w-0 rounded-lg border border-border/70 bg-background/50 px-3 py-2 sm:border-0 sm:bg-transparent sm:p-0">
-            <span className="text-xs text-muted-foreground">{stat.label}</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg font-semibold text-foreground">
-                {stat.value}
-              </span>
-              {stat.sub && (
-                <span className="text-xs text-destructive">{stat.sub}</span>
-              )}
-            </div>
-          </div>
+          <span
+            key={stat.label}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-sm text-muted-foreground"
+          >
+            {stat.label}
+            <strong className="font-semibold text-foreground">{stat.value}</strong>
+            {stat.sub && <span className="text-xs text-destructive">{stat.sub}</span>}
+          </span>
         ))}
       </div>
 
       {lowConfidenceCount > 0 && (
-        <label className="flex w-full cursor-pointer select-none items-center gap-2 text-sm text-foreground lg:w-auto">
+        <label className="inline-flex h-9 cursor-pointer select-none items-center gap-2 rounded-full border border-border bg-card px-3 text-sm text-foreground">
           <input
             type="checkbox"
             checked={lowConfidenceOnly}
             onChange={(e) => onToggleLowConfidence(e.target.checked)}
-            className="w-4 h-4 rounded border-border text-primary focus:ring-ring"
+            className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
           />
-          Low confidence only
-          <span className="text-xs text-muted-foreground">(&lt;50%)</span>
+          Low confidence
         </label>
       )}
     </div>

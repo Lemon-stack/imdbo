@@ -31,7 +31,7 @@ export default function Dashboard() {
         </div>
         <Button
           onClick={openUpload}
-          className="h-11 rounded-2xl border border-[#0042AB] px-5 text-sm font-semibold tracking-[-0.5px] text-white"
+          className="h-10 rounded-2xl border border-[#0042AB] px-5 text-sm font-semibold tracking-[-0.5px] text-white"
           style={{ backgroundImage: "var(--cta-gradient)" }}
         >
           Upload images

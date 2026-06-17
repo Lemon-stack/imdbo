@@ -266,12 +266,6 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
 
   return (
     <div className="space-y-4">
-      <ConfidenceSummary
-        data={data}
-        lowConfidenceOnly={lowConfidenceOnly}
-        onToggleLowConfidence={setLowConfidenceOnly}
-      />
-
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="relative flex-1 max-w-xs">
           <svg
@@ -297,6 +291,11 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
             className="w-full pl-8 pr-3 py-2 text-sm bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
+        <ConfidenceSummary
+          data={data}
+          lowConfidenceOnly={lowConfidenceOnly}
+          onToggleLowConfidence={setLowConfidenceOnly}
+        />
         <Button
           variant="outline"
           size="sm"
