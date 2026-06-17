@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SubmissionRow } from "@/hooks/use-submissions";
 import { usePagination } from "@/hooks/use-pagination";
 import { exportToCSV } from "@/lib/utils/export-csv";
@@ -14,11 +14,14 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { SubmissionDetail } from "./submission-detail";
+import { ConfidenceSummary } from "./confidence-summary";
 import {
   averageConfidence,
   countExtracted,
   confidenceColor,
+  fieldConfidence,
   EXTRACTED_FIELDS,
+  type FieldName,
 } from "@/lib/utils/confidence";
 
 interface SubmissionsTableProps {
@@ -53,7 +56,33 @@ function FieldsChip({ count }: { count: number }) {
   );
 }
 
+function ConfidentCell({
+  value,
+  field,
+  row,
+}: {
+  value: string | null;
+  field: FieldName;
+  row: SubmissionRow;
+}) {
+  const hasValue = value != null && String(value).trim() !== "";
+  if (!hasValue) return <span className="text-gray-400">—</span>;
+  const score = fieldConfidence(row.confidence, field);
+  const colors = confidenceColor(score);
+  return <span className={colors.text}>{value}</span>;
+}
+
 export function SubmissionsTable({ data }: SubmissionsTableProps) {
+  const [lowConfidenceOnly, setLowConfidenceOnly] = useState(false);
+
+  const filteredData = useMemo(() => {
+    if (!lowConfidenceOnly) return data;
+    return data.filter((row) => {
+      const avg = averageConfidence(row.confidence);
+      return avg !== null && avg < 0.5;
+    });
+  }, [data, lowConfidenceOnly]);
+
   const {
     paginatedItems,
     pageIndex,
@@ -61,7 +90,7 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
     pageCount,
     canPreviousPage,
     canNextPage,
-  } = usePagination(data);
+  } = usePagination(filteredData);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const handleExportAll = () => {
@@ -70,6 +99,12 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
 
   return (
     <div className="space-y-4">
+      <ConfidenceSummary
+        data={data}
+        lowConfidenceOnly={lowConfidenceOnly}
+        onToggleLowConfidence={setLowConfidenceOnly}
+      />
+
       <div className="flex items-center justify-end">
         <Button variant="outline" size="sm" onClick={handleExportAll} className="gap-2">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,52 +132,74 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedItems.map((row) => {
-              const isExpanded = expandedId === row.id;
-              return (
-                <>
-                  <TableRow
-                    key={row.id}
-                    className="cursor-pointer"
-                    onClick={() => setExpandedId(isExpanded ? null : row.id)}
-                  >
-                    <TableCell className="w-8">
-                      <svg
-                        className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-90" : ""}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">{row.barcode || "—"}</TableCell>
-                    <TableCell>{row.brand || "—"}</TableCell>
-                    <TableCell className="max-w-xs truncate">{row.productName || "—"}</TableCell>
-                    <TableCell>{row.categoryType || "—"}</TableCell>
-                    <TableCell>{row.weightUnit || "—"}</TableCell>
-                    <TableCell>{row.packagingType || "—"}</TableCell>
-                    <TableCell>{row.countryOfOrigin || "—"}</TableCell>
-                    <TableCell>
-                      <FieldsChip count={countExtracted(row)} />
-                    </TableCell>
-                    <TableCell>
-                      <ConfidenceBadge score={averageConfidence(row.confidence)} />
-                    </TableCell>
-                    <TableCell className="text-xs text-gray-600">
-                      {new Date(row.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                  {isExpanded && (
-                    <TableRow key={`${row.id}-detail`}>
-                      <TableCell colSpan={11} className="p-0">
-                        <SubmissionDetail row={row} />
+            {paginatedItems.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={11} className="text-center text-gray-500 py-8">
+                  No submissions match this filter.
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedItems.map((row) => {
+                const isExpanded = expandedId === row.id;
+                return (
+                  <>
+                    <TableRow
+                      key={row.id}
+                      className="cursor-pointer"
+                      onClick={() => setExpandedId(isExpanded ? null : row.id)}
+                    >
+                      <TableCell className="w-8">
+                        <svg
+                          className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">
+                        <ConfidentCell value={row.barcode} field="barcode" row={row} />
+                      </TableCell>
+                      <TableCell>
+                        <ConfidentCell value={row.brand} field="brand" row={row} />
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        <ConfidentCell value={row.productName} field="productName" row={row} />
+                      </TableCell>
+                      <TableCell>
+                        <ConfidentCell value={row.categoryType} field="categoryType" row={row} />
+                      </TableCell>
+                      <TableCell>
+                        <ConfidentCell value={row.weightUnit} field="weightUnit" row={row} />
+                      </TableCell>
+                      <TableCell>
+                        <ConfidentCell value={row.packagingType} field="packagingType" row={row} />
+                      </TableCell>
+                      <TableCell>
+                        <ConfidentCell value={row.countryOfOrigin} field="countryOfOrigin" row={row} />
+                      </TableCell>
+                      <TableCell>
+                        <FieldsChip count={countExtracted(row)} />
+                      </TableCell>
+                      <TableCell>
+                        <ConfidenceBadge score={averageConfidence(row.confidence)} />
+                      </TableCell>
+                      <TableCell className="text-xs text-gray-600">
+                        {new Date(row.createdAt).toLocaleDateString()}
                       </TableCell>
                     </TableRow>
-                  )}
-                </>
-              );
-            })}
+                    {isExpanded && (
+                      <TableRow key={`${row.id}-detail`}>
+                        <TableCell colSpan={11} className="p-0">
+                          <SubmissionDetail row={row} />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                );
+              })
+            )}
           </TableBody>
         </Table>
       </div>
@@ -150,7 +207,7 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-600">
-          Page {pageIndex + 1} of {pageCount} ({data.length} total)
+          Page {pageCount === 0 ? 0 : pageIndex + 1} of {pageCount} ({filteredData.length} shown, {data.length} total)
         </div>
         <div className="flex gap-2">
           <Button
