@@ -7,15 +7,16 @@ This guide walks through getting Imdbo running from a fresh checkout to a hosted
 
 ## 1. Buy OpenAI credits
 
-1. Create or sign in to an OpenAI account.
-2. Open the billing area.
+1. Create or sign in to an OpenAI Platform account: [https://platform.openai.com](https://platform.openai.com)
+2. Open billing directly: [https://platform.openai.com/settings/organization/billing/overview](https://platform.openai.com/settings/organization/billing/overview)
 3. Add a payment method.
 4. Buy enough credits for image extraction testing and production usage.
-5. Confirm the account has access to the model used by the app.
+5. Check usage and spend here: [https://platform.openai.com/usage](https://platform.openai.com/usage)
+6. Review model pricing before production usage: [https://platform.openai.com/docs/pricing](https://platform.openai.com/docs/pricing)
 
 ## 2. Create an OpenAI API key
 
-1. Open the OpenAI API keys page.
+1. Open the OpenAI API keys page directly: [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 2. Create a new project key.
 3. Copy the key once.
 4. Add it to your local environment file:
@@ -25,6 +26,8 @@ OPENAI_API_KEY=your_openai_api_key
 ```
 
 Never commit API keys to git.
+
+OpenAI API key safety guidance: [https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety](https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety)
 
 ## 3. Create the database
 
