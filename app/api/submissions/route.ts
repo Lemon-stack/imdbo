@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { submissions } from "@/lib/db/schema";
 import { extractFromImages } from "@/lib/utils/extract-from-image";
 import { getClientIp } from "@/lib/utils/get-ip";
+import { sha256Hex } from "@/lib/utils/image-hash";
 import { eq, desc } from "drizzle-orm";
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
@@ -76,15 +77,22 @@ export async function POST(req: NextRequest) {
     const frontBytes = await frontFile.arrayBuffer();
     const frontBase64 = Buffer.from(frontBytes).toString("base64");
     const frontDataUrl = `data:${frontFile.type};base64,${frontBase64}`;
+    const frontHash = sha256Hex(frontBytes);
 
     let backBase64: string | undefined;
     let backDataUrl: string | undefined;
+    let backHash: string | undefined;
     if (backFile) {
       const backBytes = await backFile.arrayBuffer();
       backBase64 = Buffer.from(backBytes).toString("base64");
       backDataUrl = `data:${backFile.type};base64,${backBase64}`;
+      backHash = sha256Hex(backBytes);
     }
 
+    // No deduplication: each recursive upload creates a new row so the user
+    // can compare extraction results across runs. The hash columns are
+    // stored for traceability (UI can show "you've uploaded this before")
+    // but are NOT used to block or merge uploads.
     const extracted = await extractFromImages(frontBase64, backBase64);
 
     const result = await getDb().insert(submissions).values({
@@ -104,6 +112,8 @@ export async function POST(req: NextRequest) {
       tagline: extracted.tagline,
       frontImage: frontDataUrl,
       backImage: backDataUrl ?? null,
+      frontImageHash: frontHash,
+      backImageHash: backHash ?? null,
       confidence: extracted.confidence,
       rawExtraction: extracted,
     }).returning();

@@ -26,6 +26,8 @@ export interface SubmissionRow {
   tagline: string | null;
   frontImage: string | null;
   backImage: string | null;
+  frontImageHash: string | null;
+  backImageHash: string | null;
   confidence: Record<string, number> | null;
   rawExtraction: Record<string, unknown> | null;
   manuallyEdited: Record<string, boolean> | null;

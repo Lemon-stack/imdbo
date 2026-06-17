@@ -58,7 +58,8 @@ IMPORTANT: Return ONLY valid JSON with these EXACT field names. Every field must
 
 async function extractSingleImage(
   base64Image: string,
-  side: string
+  side: string,
+  temperatureBoost = 0
 ): Promise<ExtractedData> {
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
@@ -80,7 +81,7 @@ async function extractSingleImage(
       },
     ],
     max_tokens: 800,
-    temperature: 0.2,
+    temperature: 0.2 + temperatureBoost,
   });
 
   const content = response.choices[0].message.content;
@@ -130,22 +131,34 @@ function mergeExtractions(
 ): ExtractedData {
   if (!back) return front;
 
-  const pick = (a: string | null, b: string | null): string | null => a || b;
+  // For each field, pick the value from whichever side has higher confidence.
+  // This is better than "front wins unless null" because the back often has
+  // the barcode, weight, and ingredients while the front has the brand/name.
+  const pickByConfidence = (
+    field: keyof ExtractedData
+  ): string | null => {
+    const fConf = front.confidence[field] ?? 0;
+    const bConf = back.confidence[field] ?? 0;
+    if (fConf >= bConf) {
+      return front[field] as string | null;
+    }
+    return back[field] as string | null;
+  };
 
   return {
-    itemName: pick(front.itemName, back.itemName),
-    barcode: pick(front.barcode, back.barcode),
-    manufacturer: pick(front.manufacturer, back.manufacturer),
-    brand: pick(front.brand, back.brand),
-    weight: pick(front.weight, back.weight),
-    packagingType: pick(front.packagingType, back.packagingType),
-    country: pick(front.country, back.country),
-    variant: pick(front.variant, back.variant),
-    type: pick(front.type, back.type),
-    fragranceFlavor: pick(front.fragranceFlavor, back.fragranceFlavor),
-    promotion: pick(front.promotion, back.promotion),
-    addons: pick(front.addons, back.addons),
-    tagline: pick(front.tagline, back.tagline),
+    itemName: pickByConfidence("itemName"),
+    barcode: pickByConfidence("barcode"),
+    manufacturer: pickByConfidence("manufacturer"),
+    brand: pickByConfidence("brand"),
+    weight: pickByConfidence("weight"),
+    packagingType: pickByConfidence("packagingType"),
+    country: pickByConfidence("country"),
+    variant: pickByConfidence("variant"),
+    type: pickByConfidence("type"),
+    fragranceFlavor: pickByConfidence("fragranceFlavor"),
+    promotion: pickByConfidence("promotion"),
+    addons: pickByConfidence("addons"),
+    tagline: pickByConfidence("tagline"),
     confidence: {
       ...front.confidence,
       ...Object.entries(back.confidence || {}).reduce(
@@ -170,21 +183,74 @@ export async function extractFromImage(
   }
 }
 
+/**
+ * Count how many of the 13 spec fields have a non-null value.
+ */
+function countNonNull(data: ExtractedData): number {
+  const fields: (keyof ExtractedData)[] = [
+    "itemName", "barcode", "manufacturer", "brand", "weight",
+    "packagingType", "country", "variant", "type", "fragranceFlavor",
+    "promotion", "addons", "tagline",
+  ];
+  return fields.reduce((acc, f) => acc + (data[f] != null ? 1 : 0), 0);
+}
+
+/**
+ * Extract from one or two images. If the result has fewer than MIN_FIELDS
+ * non-null values, retry up to MAX_RETRIES times. Each retry uses a slightly
+ * higher temperature to encourage the model to look harder.
+ */
+const MIN_FIELDS = 5; // at least 5 of 13 fields must be non-null
+const MAX_RETRIES = 2; // up to 3 total attempts (initial + 2 retries)
+
 export async function extractFromImages(
   frontBase64: string,
   backBase64?: string
 ): Promise<ExtractedData> {
-  try {
-    const frontData = await extractSingleImage(frontBase64, "front");
+  let lastError: unknown;
 
-    if (!backBase64) {
-      return frontData;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const frontData = await extractSingleImage(
+        frontBase64,
+        "front",
+        attempt * 0.15 // increase temperature on retries
+      );
+
+      const merged = backBase64
+        ? mergeExtractions(
+            frontData,
+            await extractSingleImage(backBase64, "back", attempt * 0.15)
+          )
+        : frontData;
+
+      const filled = countNonNull(merged);
+      if (filled >= MIN_FIELDS) {
+        return merged;
+      }
+
+      console.warn(
+        `Extraction attempt ${attempt + 1}: only ${filled}/${MIN_FIELDS} fields filled, retrying...`
+      );
+      lastError = new Error(
+        `Insufficient fields extracted: ${filled}/${MIN_FIELDS}`
+      );
+    } catch (error) {
+      console.error(`Extraction attempt ${attempt + 1} failed:`, error);
+      lastError = error;
     }
+  }
 
-    const backData = await extractSingleImage(backBase64, "back");
-    return mergeExtractions(frontData, backData);
+  // Last attempt — return whatever we got, even if sparse
+  try {
+    const frontData = await extractSingleImage(frontBase64, "front", 0.3);
+    if (backBase64) {
+      const backData = await extractSingleImage(backBase64, "back", 0.3);
+      return mergeExtractions(frontData, backData);
+    }
+    return frontData;
   } catch (error) {
-    console.error("Multi-image extraction error:", error);
-    throw error;
+    console.error("Final extraction attempt failed:", error);
+    throw lastError || error;
   }
 }

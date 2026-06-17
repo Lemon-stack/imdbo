@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { submissions } from "@/lib/db/schema";
 import { extractFromImages } from "@/lib/utils/extract-from-image";
 import { getClientIp } from "@/lib/utils/get-ip";
+import { sha256Hex } from "@/lib/utils/image-hash";
 import { eq, and } from "drizzle-orm";
 import { EXTRACTED_FIELDS, type FieldName } from "@/lib/utils/confidence";
 
@@ -57,13 +58,16 @@ export async function POST(
     const frontBytes = await frontFile.arrayBuffer();
     const frontBase64 = Buffer.from(frontBytes).toString("base64");
     const frontDataUrl = `data:${frontFile.type};base64,${frontBase64}`;
+    const frontHash = sha256Hex(frontBytes);
 
     let backBase64: string | undefined;
     let backDataUrl: string | undefined;
+    let backHash: string | undefined;
     if (backFile) {
       const backBytes = await backFile.arrayBuffer();
       backBase64 = Buffer.from(backBytes).toString("base64");
       backDataUrl = `data:${backFile.type};base64,${backBase64}`;
+      backHash = sha256Hex(backBytes);
     }
 
     const extracted = await extractFromImages(frontBase64, backBase64);
@@ -89,9 +93,11 @@ export async function POST(
     }
     update.confidence = confidence;
     update.rawExtraction = extracted;
-    // Always update the source images on re-extract
+    // Always update the source images + their hashes on re-extract
     update.frontImage = frontDataUrl;
     update.backImage = backDataUrl ?? null;
+    update.frontImageHash = frontHash;
+    update.backImageHash = backHash ?? null;
 
     const updated = await getDb()
       .update(submissions)
