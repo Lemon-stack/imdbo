@@ -28,6 +28,5 @@ export function useSubmissions() {
       }
       return res.json();
     },
-    refetchInterval: 5000,
   });
 }

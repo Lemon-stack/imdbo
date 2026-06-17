@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "IMDB",
-  description: "Extract product data from images",
+  title: "Imdbo — Extract Product Data from Images",
+  description: "Upload product packaging images and automatically extract barcode, brand, weight, and 7 other fields.",
 };
 
 export default function RootLayout({

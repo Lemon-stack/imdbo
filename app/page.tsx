@@ -36,8 +36,8 @@ export default function Home() {
               <p className="text-sm text-gray-600">Image angles supported</p>
             </div>
             <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-black">IP</div>
-              <p className="text-sm text-gray-600">Tracked (no signup)</p>
+              <div className="text-3xl font-bold text-black">0</div>
+              <p className="text-sm text-gray-600">Logins required</p>
             </div>
           </div>
         </div>
