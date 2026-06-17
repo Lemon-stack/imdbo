@@ -5,46 +5,55 @@ const openai = new OpenAI({
 });
 
 export interface ExtractedData {
+  itemName: string | null;
   barcode: string | null;
-  categoryType: string | null;
-  segmentType: string | null;
   manufacturer: string | null;
   brand: string | null;
-  productName: string | null;
-  weightUnit: string | null;
+  weight: string | null;
   packagingType: string | null;
-  countryOfOrigin: string | null;
-  promotionalMessage: string | null;
+  country: string | null;
+  variant: string | null;
+  type: string | null;
+  fragranceFlavor: string | null;
+  promotion: string | null;
+  addons: string | null;
+  tagline: string | null;
   confidence: Record<string, number>;
 }
 
-const EXTRACTION_PROMPT = `You are a product data extraction specialist. Extract EXACTLY these 10 fields from the product packaging image:
+const EXTRACTION_PROMPT = `Extract EXACTLY these 13 fields from the product packaging image. Use ground truth from packaging as shown:
 
-1. barcode - Product barcode/UPC/EAN number (alphanumeric code)
-2. categoryType - Product category (dairy, beverages, snacks, personal care, etc.)
-3. segmentType - Market segment classification (premium, standard, economy, organic, natural, etc.)
-4. manufacturer - Company name that manufactures the product
-5. brand - Brand name of the product
-6. productName - Full product name and flavor/variant
-7. weightUnit - Net weight with unit (e.g., "500g", "2L", "250ml", "12 oz")
-8. packagingType - Type of packaging (bottle, can, box, jar, bag, pouch, etc.)
-9. countryOfOrigin - Country where product is manufactured
-10. promotionalMessage - Any promotional, marketing, or special offer text visible on packaging
+1. ITEM_NAME - Full descriptive product name as intended for the catalog
+2. BARCODE - Numeric barcode as printed on package; numeric string without spaces/dashes
+3. MANUFACTURER - Company that manufactures the product
+4. BRAND - Brand name as shown on package
+5. WEIGHT - Net weight or net volume (including unit). Use same format as ground truth (e.g., "260g", "430g", "1.5 KG", "500 ML")
+6. PACKAGING_TYPE - Packaging form (TUB, GLASS JAR, SACHET, BOTTLE, CAN, etc.)
+7. COUNTRY - Country of manufacture/packaging
+8. VARIANT - Product variant if applicable (e.g., "ORIGINAL", "LOW FAT"); empty if not applicable
+9. TYPE - Product type or short category (e.g., "MARGARINE", "MAYONNAISE", "BUTTER")
+10. FRAGRANCE_FLAVOR - Flavor or fragrance where applicable (e.g., "RICH", "ORIGINAL"); empty if not applicable
+11. PROMOTION - Any on-pack promotion text the ground truth includes (e.g., "50% OFF"); empty if not applicable
+12. ADDONS - Additional product features or pack contents (e.g., "SPOON INCLUDED"); empty if not applicable
+13. TAGLINE - Short promotional or descriptive tagline; may be empty
 
-IMPORTANT: Return ONLY valid JSON with these EXACT field names. Every field must be present (use null if not found).
+Return ONLY valid JSON with these EXACT field names. Every field must be present (use null or empty string "" if not found).
 
 {
+  "itemName": "string or null",
   "barcode": "string or null",
-  "categoryType": "string or null",
-  "segmentType": "string or null",
   "manufacturer": "string or null",
   "brand": "string or null",
-  "productName": "string or null",
-  "weightUnit": "string or null",
+  "weight": "string or null",
   "packagingType": "string or null",
-  "countryOfOrigin": "string or null",
-  "promotionalMessage": "string or null",
-  "confidence": {"barcode": 0.0, "categoryType": 0.0, ...}
+  "country": "string or null",
+  "variant": "string or null",
+  "type": "string or null",
+  "fragranceFlavor": "string or null",
+  "promotion": "string or null",
+  "addons": "string or null",
+  "tagline": "string or null",
+  "confidence": {"itemName": 0.9, "barcode": 0.95, ...}
 }`;
 
 async function extractSingleImage(
@@ -89,23 +98,26 @@ async function extractSingleImage(
   const extracted = JSON.parse(jsonStr);
 
   const normalizeField = (val: any): string | null => {
-    if (!val || val === "null" || val === "N/A" || val === "unknown") {
+    if (!val || val === "null" || val === "N/A" || val === "unknown" || val === "") {
       return null;
     }
     return String(val).trim() || null;
   };
 
   return {
+    itemName: normalizeField(extracted.itemName),
     barcode: normalizeField(extracted.barcode),
-    categoryType: normalizeField(extracted.categoryType),
-    segmentType: normalizeField(extracted.segmentType),
     manufacturer: normalizeField(extracted.manufacturer),
     brand: normalizeField(extracted.brand),
-    productName: normalizeField(extracted.productName),
-    weightUnit: normalizeField(extracted.weightUnit),
+    weight: normalizeField(extracted.weight),
     packagingType: normalizeField(extracted.packagingType),
-    countryOfOrigin: normalizeField(extracted.countryOfOrigin),
-    promotionalMessage: normalizeField(extracted.promotionalMessage),
+    country: normalizeField(extracted.country),
+    variant: normalizeField(extracted.variant),
+    type: normalizeField(extracted.type),
+    fragranceFlavor: normalizeField(extracted.fragranceFlavor),
+    promotion: normalizeField(extracted.promotion),
+    addons: normalizeField(extracted.addons),
+    tagline: normalizeField(extracted.tagline),
     confidence: extracted.confidence && typeof extracted.confidence === "object"
       ? extracted.confidence
       : {},
@@ -119,17 +131,19 @@ function mergeExtractions(
   if (!back) return front;
 
   return {
+    itemName: front.itemName || back.itemName,
     barcode: front.barcode || back.barcode,
-    categoryType: front.categoryType || back.categoryType,
-    segmentType: front.segmentType || back.segmentType,
     manufacturer: front.manufacturer || back.manufacturer,
     brand: front.brand || back.brand,
-    productName: front.productName || back.productName,
-    weightUnit: front.weightUnit || back.weightUnit,
+    weight: front.weight || back.weight,
     packagingType: front.packagingType || back.packagingType,
-    countryOfOrigin: front.countryOfOrigin || back.countryOfOrigin,
-    promotionalMessage: (front.promotionalMessage || "") +
-                        (back.promotionalMessage ? " " + back.promotionalMessage : ""),
+    country: front.country || back.country,
+    variant: front.variant || back.variant,
+    type: front.type || back.type,
+    fragranceFlavor: front.fragranceFlavor || back.fragranceFlavor,
+    promotion: (front.promotion || "") + (back.promotion ? " " + back.promotion : ""),
+    addons: (front.addons || "") + (back.addons ? " " + back.addons : ""),
+    tagline: front.tagline || back.tagline,
     confidence: {
       ...front.confidence,
       ...Object.entries(back.confidence || {}).reduce(

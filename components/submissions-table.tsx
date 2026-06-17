@@ -47,13 +47,14 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Item Name</TableHead>
               <TableHead>Barcode</TableHead>
               <TableHead>Brand</TableHead>
-              <TableHead>Product Name</TableHead>
-              <TableHead>Category</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Weight</TableHead>
               <TableHead>Packaging</TableHead>
               <TableHead>Country</TableHead>
+              <TableHead>Variant</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="w-10"></TableHead>
             </TableRow>
@@ -61,17 +62,20 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
           <TableBody>
             {paginatedItems.map((row) => (
               <TableRow key={row.id}>
+                <TableCell className="max-w-xs truncate">
+                  {row.itemName || "—"}
+                </TableCell>
                 <TableCell className="font-mono text-xs">
                   {row.barcode || "—"}
                 </TableCell>
                 <TableCell>{row.brand || "—"}</TableCell>
-                <TableCell className="max-w-xs truncate">
-                  {row.productName || "—"}
-                </TableCell>
-                <TableCell>{row.categoryType || "—"}</TableCell>
-                <TableCell>{row.weightUnit || "—"}</TableCell>
+                <TableCell>{row.type || "—"}</TableCell>
+                <TableCell>{row.weight || "—"}</TableCell>
                 <TableCell>{row.packagingType || "—"}</TableCell>
-                <TableCell>{row.countryOfOrigin || "—"}</TableCell>
+                <TableCell>{row.country || "—"}</TableCell>
+                <TableCell className="text-sm text-gray-600">
+                  {row.variant || "—"}
+                </TableCell>
                 <TableCell className="text-xs text-gray-600">
                   {new Date(row.createdAt).toLocaleDateString()}
                 </TableCell>

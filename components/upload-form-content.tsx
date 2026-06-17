@@ -4,6 +4,12 @@ import { useRef, useState } from "react";
 import { useExtractImages } from "@/hooks/use-extract-images";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface UploadFormContentProps {
   closeDialog?: () => void;
@@ -14,6 +20,9 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
   const backInputRef = useRef<HTMLInputElement>(null);
   const [frontPreview, setFrontPreview] = useState<string | null>(null);
   const [backPreview, setBackPreview] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewSide, setPreviewSide] = useState<"front" | "back">("front");
   const mutation = useExtractImages();
   const router = useRouter();
 
@@ -43,6 +52,11 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
 
     await mutation.mutateAsync({ front: frontFile, back: backFile || null });
 
+    setFrontPreview(null);
+    setBackPreview(null);
+    if (frontInputRef.current) frontInputRef.current.value = "";
+    if (backInputRef.current) backInputRef.current.value = "";
+
     closeDialog?.();
 
     setTimeout(() => {
@@ -53,6 +67,7 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         {/* Front */}
@@ -65,17 +80,11 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
             className="hidden"
             id="front-input"
           />
-          <label
-            htmlFor="front-input"
-            className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition"
-          >
-            {frontPreview ? (
-              <img
-                src={frontPreview}
-                alt="Front preview"
-                className="w-full h-full object-cover rounded-lg"
-              />
-            ) : (
+          {!frontPreview ? (
+            <label
+              htmlFor="front-input"
+              className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition"
+            >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
                 <svg
                   className="w-8 h-8 text-gray-400 mb-2"
@@ -96,8 +105,32 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
                   (required)
                 </p>
               </div>
-            )}
-          </label>
+            </label>
+          ) : (
+            <div className="relative w-full h-48 border-2 border-gray-300 rounded-lg overflow-hidden">
+              <img
+                src={frontPreview}
+                alt="Front preview"
+                className="w-full h-full object-cover rounded-lg cursor-pointer"
+                onClick={() => {
+                  setPreviewImage(frontPreview);
+                  setPreviewSide("front");
+                  setPreviewOpen(true);
+                }}
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setFrontPreview(null);
+                  if (frontInputRef.current) frontInputRef.current.value = "";
+                }}
+                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold"
+              >
+                ×
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Back */}
@@ -110,17 +143,11 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
             className="hidden"
             id="back-input"
           />
-          <label
-            htmlFor="back-input"
-            className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition"
-          >
-            {backPreview ? (
-              <img
-                src={backPreview}
-                alt="Back preview"
-                className="w-full h-full object-cover rounded-lg"
-              />
-            ) : (
+          {!backPreview ? (
+            <label
+              htmlFor="back-input"
+              className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition"
+            >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
                 <svg
                   className="w-8 h-8 text-gray-400 mb-2"
@@ -141,8 +168,32 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
                   (optional)
                 </p>
               </div>
-            )}
-          </label>
+            </label>
+          ) : (
+            <div className="relative w-full h-48 border-2 border-gray-300 rounded-lg overflow-hidden">
+              <img
+                src={backPreview}
+                alt="Back preview"
+                className="w-full h-full object-cover rounded-lg cursor-pointer"
+                onClick={() => {
+                  setPreviewImage(backPreview);
+                  setPreviewSide("back");
+                  setPreviewOpen(true);
+                }}
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setBackPreview(null);
+                  if (backInputRef.current) backInputRef.current.value = "";
+                }}
+                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold"
+              >
+                ×
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -160,5 +211,21 @@ export function UploadFormContent({ closeDialog }: UploadFormContentProps) {
         </div>
       )}
     </form>
+
+    <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Preview - {previewSide === "front" ? "Front" : "Back"}</DialogTitle>
+        </DialogHeader>
+        {previewImage && (
+          <img
+            src={previewImage}
+            alt={`${previewSide} preview`}
+            className="w-full h-auto rounded-lg"
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }
