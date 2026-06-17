@@ -29,7 +29,38 @@ export function SubmissionDetail({ row }: SubmissionDetailProps) {
 
   return (
     <div className="bg-muted/30 border-t-0 px-4 py-5 space-y-5">
-      {/* All 10 fields with per-field confidence, inline-editable */}
+      {/* Source images */}
+      {(row.frontImage || row.backImage) && (
+        <div>
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            Source Images
+          </h4>
+          <div className="grid grid-cols-2 gap-3 max-w-md">
+            {row.frontImage && (
+              <div className="space-y-1">
+                <img
+                  src={row.frontImage}
+                  alt="Front of product"
+                  className="w-full h-32 object-contain bg-background border border-border rounded-lg"
+                />
+                <p className="text-[10px] text-muted-foreground text-center">Front</p>
+              </div>
+            )}
+            {row.backImage && (
+              <div className="space-y-1">
+                <img
+                  src={row.backImage}
+                  alt="Back of product"
+                  className="w-full h-32 object-contain bg-background border border-border rounded-lg"
+                />
+                <p className="text-[10px] text-muted-foreground text-center">Back</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* All 13 fields with per-field confidence, inline-editable */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">

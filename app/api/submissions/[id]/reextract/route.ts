@@ -56,11 +56,14 @@ export async function POST(
 
     const frontBytes = await frontFile.arrayBuffer();
     const frontBase64 = Buffer.from(frontBytes).toString("base64");
+    const frontDataUrl = `data:${frontFile.type};base64,${frontBase64}`;
 
     let backBase64: string | undefined;
+    let backDataUrl: string | undefined;
     if (backFile) {
       const backBytes = await backFile.arrayBuffer();
       backBase64 = Buffer.from(backBytes).toString("base64");
+      backDataUrl = `data:${backFile.type};base64,${backBase64}`;
     }
 
     const extracted = await extractFromImages(frontBase64, backBase64);
@@ -86,6 +89,9 @@ export async function POST(
     }
     update.confidence = confidence;
     update.rawExtraction = extracted;
+    // Always update the source images on re-extract
+    update.frontImage = frontDataUrl;
+    update.backImage = backDataUrl ?? null;
 
     const updated = await getDb()
       .update(submissions)

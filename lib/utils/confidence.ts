@@ -1,31 +1,37 @@
 import type { SubmissionRow } from "@/hooks/use-submissions";
 
 export const EXTRACTED_FIELDS = [
+  "itemName",
   "barcode",
-  "categoryType",
-  "segmentType",
   "manufacturer",
   "brand",
-  "productName",
-  "weightUnit",
+  "weight",
   "packagingType",
-  "countryOfOrigin",
-  "promotionalMessage",
+  "country",
+  "variant",
+  "type",
+  "fragranceFlavor",
+  "promotion",
+  "addons",
+  "tagline",
 ] as const;
 
 export type FieldName = (typeof EXTRACTED_FIELDS)[number];
 
 export const FIELD_LABELS: Record<FieldName, string> = {
+  itemName: "Item Name",
   barcode: "Barcode",
-  categoryType: "Category",
-  segmentType: "Segment",
   manufacturer: "Manufacturer",
   brand: "Brand",
-  productName: "Product Name",
-  weightUnit: "Weight",
-  packagingType: "Packaging",
-  countryOfOrigin: "Country of Origin",
-  promotionalMessage: "Promotional Message",
+  weight: "Weight",
+  packagingType: "Packaging Type",
+  country: "Country",
+  variant: "Variant",
+  type: "Type",
+  fragranceFlavor: "Fragrance / Flavor",
+  promotion: "Promotion",
+  addons: "Addons",
+  tagline: "Tagline",
 };
 
 export function averageConfidence(

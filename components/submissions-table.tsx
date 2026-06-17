@@ -29,10 +29,12 @@ interface SubmissionsTableProps {
 }
 
 type SortKey =
+  | "itemName"
   | "barcode"
   | "brand"
-  | "productName"
-  | "categoryType"
+  | "type"
+  | "weight"
+  | "country"
   | "createdAt"
   | "confidence";
 type SortDir = "asc" | "desc";
@@ -151,11 +153,12 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
     if (q) {
       result = result.filter((row) => {
         const haystack = [
+          row.itemName,
           row.barcode,
           row.brand,
-          row.productName,
-          row.categoryType,
           row.manufacturer,
+          row.type,
+          row.country,
         ]
           .filter(Boolean)
           .join(" ")
@@ -282,10 +285,10 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
               <TableHead>
                 <button
                   type="button"
-                  onClick={() => toggleSort("barcode")}
+                  onClick={() => toggleSort("itemName")}
                   className="inline-flex items-center hover:text-foreground"
                 >
-                  Barcode <SortIcon dir={sortDirFor("barcode")} />
+                  Item Name <SortIcon dir={sortDirFor("itemName")} />
                 </button>
               </TableHead>
               <TableHead>
@@ -300,24 +303,40 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
               <TableHead>
                 <button
                   type="button"
-                  onClick={() => toggleSort("productName")}
+                  onClick={() => toggleSort("barcode")}
                   className="inline-flex items-center hover:text-foreground"
                 >
-                  Product Name <SortIcon dir={sortDirFor("productName")} />
+                  Barcode <SortIcon dir={sortDirFor("barcode")} />
                 </button>
               </TableHead>
               <TableHead>
                 <button
                   type="button"
-                  onClick={() => toggleSort("categoryType")}
+                  onClick={() => toggleSort("type")}
                   className="inline-flex items-center hover:text-foreground"
                 >
-                  Category <SortIcon dir={sortDirFor("categoryType")} />
+                  Type <SortIcon dir={sortDirFor("type")} />
                 </button>
               </TableHead>
-              <TableHead>Weight</TableHead>
+              <TableHead>
+                <button
+                  type="button"
+                  onClick={() => toggleSort("weight")}
+                  className="inline-flex items-center hover:text-foreground"
+                >
+                  Weight <SortIcon dir={sortDirFor("weight")} />
+                </button>
+              </TableHead>
               <TableHead>Packaging</TableHead>
-              <TableHead>Country</TableHead>
+              <TableHead>
+                <button
+                  type="button"
+                  onClick={() => toggleSort("country")}
+                  className="inline-flex items-center hover:text-foreground"
+                >
+                  Country <SortIcon dir={sortDirFor("country")} />
+                </button>
+              </TableHead>
               <TableHead>Fields</TableHead>
               <TableHead>
                 <button
@@ -383,26 +402,26 @@ export function SubmissionsTable({ data }: SubmissionsTableProps) {
                           />
                         </svg>
                       </TableCell>
-                      <TableCell className="font-mono text-xs">
-                        <ConfidentCell value={row.barcode} field="barcode" row={row} />
+                      <TableCell className="max-w-xs truncate">
+                        <ConfidentCell value={row.itemName} field="itemName" row={row} />
                       </TableCell>
                       <TableCell>
                         <ConfidentCell value={row.brand} field="brand" row={row} />
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        <ConfidentCell value={row.productName} field="productName" row={row} />
+                      <TableCell className="font-mono text-xs">
+                        <ConfidentCell value={row.barcode} field="barcode" row={row} />
                       </TableCell>
                       <TableCell>
-                        <ConfidentCell value={row.categoryType} field="categoryType" row={row} />
+                        <ConfidentCell value={row.type} field="type" row={row} />
                       </TableCell>
                       <TableCell>
-                        <ConfidentCell value={row.weightUnit} field="weightUnit" row={row} />
+                        <ConfidentCell value={row.weight} field="weight" row={row} />
                       </TableCell>
                       <TableCell>
                         <ConfidentCell value={row.packagingType} field="packagingType" row={row} />
                       </TableCell>
                       <TableCell>
-                        <ConfidentCell value={row.countryOfOrigin} field="countryOfOrigin" row={row} />
+                        <ConfidentCell value={row.country} field="country" row={row} />
                       </TableCell>
                       <TableCell>
                         <FieldsChip count={countExtracted(row)} />

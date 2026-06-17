@@ -75,27 +75,35 @@ export async function POST(req: NextRequest) {
 
     const frontBytes = await frontFile.arrayBuffer();
     const frontBase64 = Buffer.from(frontBytes).toString("base64");
+    const frontDataUrl = `data:${frontFile.type};base64,${frontBase64}`;
 
     let backBase64: string | undefined;
+    let backDataUrl: string | undefined;
     if (backFile) {
       const backBytes = await backFile.arrayBuffer();
       backBase64 = Buffer.from(backBytes).toString("base64");
+      backDataUrl = `data:${backFile.type};base64,${backBase64}`;
     }
 
     const extracted = await extractFromImages(frontBase64, backBase64);
 
     const result = await getDb().insert(submissions).values({
       userIp,
+      itemName: extracted.itemName,
       barcode: extracted.barcode,
-      categoryType: extracted.categoryType,
-      segmentType: extracted.segmentType,
       manufacturer: extracted.manufacturer,
       brand: extracted.brand,
-      productName: extracted.productName,
-      weightUnit: extracted.weightUnit,
+      weight: extracted.weight,
       packagingType: extracted.packagingType,
-      countryOfOrigin: extracted.countryOfOrigin,
-      promotionalMessage: extracted.promotionalMessage,
+      country: extracted.country,
+      variant: extracted.variant,
+      type: extracted.type,
+      fragranceFlavor: extracted.fragranceFlavor,
+      promotion: extracted.promotion,
+      addons: extracted.addons,
+      tagline: extracted.tagline,
+      frontImage: frontDataUrl,
+      backImage: backDataUrl ?? null,
       confidence: extracted.confidence,
       rawExtraction: extracted,
     }).returning();

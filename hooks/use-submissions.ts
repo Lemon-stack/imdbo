@@ -11,16 +11,21 @@ export interface EditHistoryEntry {
 export interface SubmissionRow {
   id: number;
   userIp: string;
+  itemName: string | null;
   barcode: string | null;
-  categoryType: string | null;
-  segmentType: string | null;
   manufacturer: string | null;
   brand: string | null;
-  productName: string | null;
-  weightUnit: string | null;
+  weight: string | null;
   packagingType: string | null;
-  countryOfOrigin: string | null;
-  promotionalMessage: string | null;
+  country: string | null;
+  variant: string | null;
+  type: string | null;
+  fragranceFlavor: string | null;
+  promotion: string | null;
+  addons: string | null;
+  tagline: string | null;
+  frontImage: string | null;
+  backImage: string | null;
   confidence: Record<string, number> | null;
   rawExtraction: Record<string, unknown> | null;
   manuallyEdited: Record<string, boolean> | null;

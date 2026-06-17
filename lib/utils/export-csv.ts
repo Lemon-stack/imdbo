@@ -1,34 +1,37 @@
 import { SubmissionRow } from "@/hooks/use-submissions";
 
 export function exportToCSV(data: SubmissionRow[], filename = "submissions.csv") {
+  // Exact spec column order + names
   const headers = [
-    "ID",
-    "Barcode",
-    "Brand",
-    "Product Name",
-    "Category Type",
-    "Segment Type",
-    "Manufacturer",
-    "Weight Unit",
-    "Packaging Type",
-    "Country of Origin",
-    "Promotional Message",
-    "Created At",
+    "ITEM_NAME",
+    "BARCODE",
+    "MANUFACTURER",
+    "BRAND",
+    "WEIGHT",
+    "PACKAGING TYPE",
+    "COUNTRY",
+    "VARIANT",
+    "TYPE",
+    "FRAGRANCE_FLAVOR",
+    "PROMOTION",
+    "ADDONS",
+    "TAGLINE",
   ];
 
   const rows = data.map((row) => [
-    row.id,
+    row.itemName || "",
     row.barcode || "",
-    row.brand || "",
-    row.productName || "",
-    row.categoryType || "",
-    row.segmentType || "",
     row.manufacturer || "",
-    row.weightUnit || "",
+    row.brand || "",
+    row.weight || "",
     row.packagingType || "",
-    row.countryOfOrigin || "",
-    row.promotionalMessage || "",
-    new Date(row.createdAt).toISOString(),
+    row.country || "",
+    row.variant || "",
+    row.type || "",
+    row.fragranceFlavor || "",
+    row.promotion || "",
+    row.addons || "",
+    row.tagline || "",
   ]);
 
   const csv = [headers, ...rows].map((row) =>

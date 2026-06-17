@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s · Imdbo",
   },
   description:
-    "Upload product packaging images and automatically extract barcode, brand, weight, and 7 other fields — with confidence scores on every value.",
+    "Upload product packaging images and automatically extract 13 structured fields — barcode, brand, weight, packaging type, and more — with confidence scores on every value.",
   keywords: [
     "product data extraction",
     "barcode scanner",

@@ -70,13 +70,13 @@ export default function Home() {
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full w-fit">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                10 fields per image
+                13 fields per image
               </div>
               <h1 className="text-5xl sm:text-6xl font-bold text-foreground tracking-tight leading-[1.05]">
                 Extract product data from images.
               </h1>
               <p className="text-lg text-muted-foreground max-w-md">
-                Upload packaging photos and automatically pull barcode, brand, weight, and 7 more fields — with confidence scores on every value.
+                Upload packaging photos and automatically pull barcode, brand, weight, and 12 more fields — with confidence scores on every value.
               </p>
               <div className="flex items-center gap-3 pt-2">
                 <button
@@ -138,7 +138,7 @@ export default function Home() {
         <SiteContainer>
           <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
             <div className="text-center space-y-1">
-              <div className="text-3xl font-bold text-foreground">10</div>
+              <div className="text-3xl font-bold text-foreground">13</div>
               <p className="text-sm text-muted-foreground">Fields per image</p>
             </div>
             <div className="text-center space-y-1">
